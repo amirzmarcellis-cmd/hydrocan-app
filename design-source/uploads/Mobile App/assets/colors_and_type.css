@@ -1,0 +1,195 @@
+/* ==========================================================================
+   Hydrocan Design System — Colors & Type
+   Premium, monochromatic, editorial. Sourced from src/index.css + tailwind.config.ts.
+   ========================================================================== */
+
+/* -------- Fonts -------- */
+@font-face {
+  font-family: 'Wondra';
+  src: url('fonts/Wondra.woff') format('woff'),
+       url('fonts/Wondra.otf')  format('opentype'),
+       url('fonts/Wondra.ttf')  format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Blauer Nue is the production body face. We don't have the file — fall back
+   to Inter (closest neutral geometric sans on Google Fonts). Flag: substitute. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* ------------------------------------------------------------------
+     Colors — monochromatic. All values are HSL triplets so they can be
+     wrapped in hsl() or alpha-composited with hsl(var(--x) / .5).
+     ------------------------------------------------------------------ */
+
+  /* Neutrals */
+  --background:  0 0% 98%;     /* off-white page */
+  --foreground:  0 0% 0%;      /* ink */
+  --card:        0 0% 100%;    /* pure white surface */
+  --popover:     0 0% 98%;
+
+  /* Hierarchy */
+  --primary:              0 0% 0%;
+  --primary-foreground:   0 0% 100%;
+  --secondary:            0 0% 96%;      /* soft grey fill */
+  --secondary-foreground: 0 0% 0%;
+  --muted:                0 0% 90%;
+  --muted-foreground:     0 0% 45%;
+  --accent:               210 15% 95%;   /* cool aluminium tint */
+  --accent-foreground:    0 0% 0%;
+
+  /* Lines & focus */
+  --border: 0 0% 88%;
+  --input:  0 0% 88%;
+  --ring:   0 0% 0%;
+
+  /* Editorial tokens */
+  --cream:       0 0% 97%;
+  --cream-dark:  0 0% 94%;
+  --warm-black:  0 0% 7%;
+  --warm-gray:   0 0% 45%;
+
+  /* The only hint of color — a whisper of cool blue. Use sparingly. */
+  --water-tint: 210 20% 93%;
+  --water-glow: 210 30% 85%;
+
+  /* Contrast section (dark bands on the marketing site) */
+  --section-dark:      0 0% 7%;
+  --section-dark-text: 0 0% 100%;
+
+  /* Semantic */
+  --destructive:            0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* ------------------------------------------------------------------
+     Radii, shadows, motion
+     ------------------------------------------------------------------ */
+  --radius: 0;              /* Marketing site is razor-sharp */
+  --radius-pill: 9999px;    /* Buttons/pills only */
+  --radius-health: 1rem;    /* Health app uses 16px cards */
+
+  --shadow-soft:     0 4px 20px -4px hsl(0 0% 0% / 0.06);
+  --shadow-medium:   0 8px 40px -8px hsl(0 0% 0% / 0.10);
+  --shadow-elevated: 0 20px 60px -15px hsl(0 0% 0% / 0.12);
+
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.5s var(--ease-smooth);
+  --transition-fast:   all 0.3s var(--ease-smooth);
+
+  /* ------------------------------------------------------------------
+     Spacing (section-level rhythm — the site leans on large air)
+     ------------------------------------------------------------------ */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+  --space-40: 160px;
+
+  /* ------------------------------------------------------------------
+     Type families
+     ------------------------------------------------------------------ */
+  --font-display: 'Wondra', 'Times New Roman', serif;  /* headlines */
+  --font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; /* Blauer Nue fallback */
+}
+
+/* ==========================================================================
+   Semantic typography — follow the 7-step scale in src/index.css
+   ========================================================================== */
+
+.ds-hero {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  letter-spacing: -0.04em;
+  line-height: 0.85;
+}
+
+.ds-section {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+.ds-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.ds-body-lg {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+.ds-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.ds-small {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+/* Label — the utility line above section headers and in the promo bar.
+   UPPERCASE, wide-tracked. The only place caps are used. */
+.ds-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Stat — massive counter type (e.g. "1500+ studies") */
+.ds-stat {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(3rem, 10vw, 8rem);
+  letter-spacing: -0.04em;
+  line-height: 0.85;
+}
+
+/* ==========================================================================
+   Base reset helpers
+   ========================================================================== */
+.ds-reset-body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Preview-card scaffolding (shared styles used by the cards in /preview) */
+.ds-card {
+  padding: 20px 24px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-family: var(--font-body);
+  box-sizing: border-box;
+}
+.ds-card *, .ds-card *::before, .ds-card *::after { box-sizing: border-box; }

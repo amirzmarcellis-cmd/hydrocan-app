@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "HydroCan",
+    "name": "Hydrocan",
     "slug": "hydrocan-app",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "hydrocan",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#05080F"
+      "backgroundColor": "#050608"
     },
     "ios": {
       "supportsTablet": false,
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#05080F"
+        "backgroundColor": "#050608"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.hydrocan.app"
@@ -30,6 +30,9 @@
       "output": "static",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-secure-store"]
+    "plugins": [
+      "expo-secure-store",
+      ["expo-font", { "fonts": ["./assets/fonts/Wondra.ttf"] }]
+    ]
   }
 }

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hydrocan Health — Premium Mobile App</title>
+<link rel="stylesheet" href="app.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  body { margin: 0; background: #050608; }
+  /* canvas layout */
+  .hc-canvas {
+    min-height: 100vh;
+    background: #050608;
+    color: #F2F5F9;
+    padding-bottom: 120px;
+  }
+  .hc-nav {
+    position: sticky; top: 0; z-index: 100;
+    padding: 16px 56px;
+    background: rgba(5,6,8,0.85);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid #181C24;
+    display: flex; gap: 24px; align-items: center;
+  }
+  .hc-nav .brand {
+    font-family: 'Inter', sans-serif; font-weight: 900; letter-spacing: -0.02em;
+    font-size: 14px; color: #F2F5F9; margin-right: auto;
+    display: flex; gap: 10px; align-items: baseline;
+  }
+  .hc-nav .brand span {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400; font-size: 10px; letter-spacing: 0.22em; color: #6E7888;
+  }
+  .hc-nav a {
+    color: #B8C0CC; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    text-decoration: none; padding: 8px 12px; border-radius: 4px;
+    transition: color 0.2s;
+  }
+  .hc-nav a:hover { color: #7CC9EE; }
+
+  .hc-hero {
+    padding: 80px 56px 40px;
+    max-width: 1200px;
+  }
+  .hc-section {
+    padding: 40px 0 64px;
+  }
+  .hc-section-head {
+    padding: 0 56px 32px;
+    display: flex; align-items: baseline; gap: 24px;
+  }
+  .hc-section-head .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; color: #7CC9EE;
+  }
+  .hc-section-head h2 {
+    font-family: 'Wondra', serif;
+    font-weight: 400; font-size: 36px;
+    letter-spacing: -0.03em; line-height: 1; margin: 0;
+    color: #F2F5F9;
+  }
+  .hc-section-head p {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px; color: #6E7888; margin: 0;
+    max-width: 320px; line-height: 1.5;
+  }
+
+  .hc-row {
+    display: flex; gap: 56px;
+    padding: 0 56px; overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 24px;
+  }
+  .hc-row::-webkit-scrollbar { height: 8px; }
+  .hc-row::-webkit-scrollbar-track { background: #0A0C10; }
+  .hc-row::-webkit-scrollbar-thumb { background: #232833; border-radius: 4px; }
+
+  .hc-cell { scroll-snap-align: start; flex-shrink: 0; }
+
+  .hc-proto-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 28px; padding: 40px 24px 60px;
+  }
+  .hc-tray {
+    display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    max-width: 800px;
+  }
+  .hc-tray button {
+    background: #11141A; border: 1px solid #232833;
+    color: #B8C0CC; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 8px 14px; border-radius: 999px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .hc-tray button:hover { border-color: #7CC9EE; color: #7CC9EE; }
+  .hc-tray button[data-active="true"] {
+    background: #7CC9EE; color: #050608; border-color: #7CC9EE;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="frames/ios-frame.jsx"></script>
+<script type="text/babel" src="frames/android-frame.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/primitives.jsx"></script>
+<script type="text/babel" src="app/screens1.jsx"></script>
+<script type="text/babel" src="app/screens2.jsx"></script>
+<script type="text/babel" src="app/screens-onboarding.jsx"></script>
+<script type="text/babel" src="app/screen-today.jsx"></script>
+<script type="text/babel" src="app/screens-settings.jsx"></script>
+<script type="text/babel" src="app/app-shell.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#B8E0F5",
+  "heroVariant": "ring",
+  "userState": "on-target",
+  "timeOfDay": "evening",
+  "coachVoice": "direct",
+  "goal": 2.5,
+  "startScreen": "home"
+}/*EDITMODE-END*/;
+
+const ACCENTS = [
+  { k:'ice',    v:'#7CC9EE', l:'Ice' },
+  { k:'arctic', v:'#B8E0F5', l:'Arctic' },
+  { k:'glacier',v:'#4DA8D6', l:'Glacier' },
+  { k:'mineral',v:'#9BE3D2', l:'Mineral' },
+  { k:'sunrise',v:'#E5C97A', l:'Sunrise' },
+  { k:'crimson',v:'#E58E7A', l:'Crimson' },
+];
+
+function PhoneCell({ num, name, sub, children }) {
+  return (
+    <div className="hc-cell" style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+      {children}
+      <div className="phone-caption">
+        <span className="num">{num}</span>
+        <div className="name">{name}</div>
+        <div className="sub">{sub}</div>
+      </div>
+    </div>
+  );
+}
+
+function IOSPhone({ screen, tweaks, num, name, sub }) {
+  return (
+    <PhoneCell num={num} name={name} sub={sub}>
+      <IOSDevice dark={true} width={390} height={844}>
+        <HydrocanApp tweaks={tweaks} startAt={screen} frameId={'ios-' + screen}/>
+      </IOSDevice>
+    </PhoneCell>
+  );
+}
+
+function AndroidPhone({ screen, tweaks, num, name, sub }) {
+  return (
+    <PhoneCell num={num} name={name} sub={sub}>
+      <AndroidDevice dark={true} width={400} height={860}>
+        <HydrocanApp tweaks={tweaks} startAt={screen} frameId={'android-' + screen}/>
+      </AndroidDevice>
+    </PhoneCell>
+  );
+}
+
+function Canvas() {
+  const [tweaks, setTweaks] = useTweaks(TWEAK_DEFAULTS);
+  const [protoScreen, setProtoScreen] = React.useState(tweaks.startScreen || 'home');
+
+  const setTweak = (k, v) => setTweaks({ [k]: v });
+
+  const iosScreens = [
+    { key:'auth',                  num:'01', name:'Sign in',     sub:'Entry' },
+    { key:'onboarding-name',       num:'02', name:'Name & DOB',  sub:'Onboarding 1' },
+    { key:'onboarding-customer',   num:'03', name:'Are you a customer?', sub:'Onboarding 2' },
+    { key:'onboarding-connect',    num:'04', name:'Connect device', sub:'Onboarding 3' },
+    { key:'onboarding-goal',       num:'05', name:'Daily goal',  sub:'Onboarding 4' },
+    { key:'onboarding-permissions',num:'06', name:'Permissions', sub:'Onboarding 5' },
+    { key:'home',                  num:'07', name:'Today',       sub:'Recovery score + signals' },
+    { key:'coach',                 num:'08', name:'AI Coach',    sub:'Chat + insights' },
+    { key:'trends',                num:'09', name:'My study',    sub:'Personal lab notebook' },
+    { key:'recovery',              num:'10', name:'Recovery',    sub:'Tonight\u2019s action' },
+    { key:'community',             num:'11', name:'Cohort',      sub:'Leaderboard · 38k' },
+    { key:'log',                   num:'12', name:'Log',         sub:'Quick entry' },
+    { key:'scan',                  num:'13', name:'Scan',        sub:'NFC / QR' },
+    { key:'workout',               num:'14', name:'Run plan',    sub:'Before · During · After' },
+  ];
+  const androidScreens = [
+    { key:'product',      num:'15', name:'Product',      sub:'Can detail' },
+    { key:'subscription', num:'16', name:'Subscribe',    sub:'Delivery plan' },
+    { key:'profile',      num:'17', name:'Profile',      sub:'Account · devices' },
+    { key:'reminders',    num:'18', name:'Reminders',    sub:'Drink schedule' },
+    { key:'manual',       num:'19', name:'Manual entry', sub:'No-wearable input' },
+    { key:'privacy',      num:'20', name:'Privacy',      sub:'Data control' },
+    { key:'help',         num:'21', name:'Help',         sub:'Support topics' },
+    { key:'education',    num:'22', name:'Learn',        sub:'The science' },
+    { key:'notifications',num:'23', name:'Inbox',        sub:'Smart alerts' },
+  ];
+  const allScreens = [...iosScreens, ...androidScreens];
+
+  return (
+    <div className="hc-canvas">
+      <div className="hc-nav">
+        <div className="brand">HYDROCAN <span>HEALTH · OS</span></div>
+        <a href="#ios">iOS</a>
+        <a href="#android">Android</a>
+        <a href="#proto">Prototype</a>
+      </div>
+
+      {/* Hero */}
+      <div className="hc-hero">
+        <div className="hc-eyebrow">HYDROGEN HEALTH · OS · v3</div>
+        <h1 className="hc-title">The H<sub style={{fontSize:'0.5em', verticalAlign:'baseline'}}>2</sub> response,<br/><b>quantified.</b></h1>
+        <p className="hc-sub">
+          The first app that scores how hydrogen water is changing YOUR body. Oxidative stress, inflammation index, cellular hydration, mitochondrial energy — proprietary metrics that compound the longer you log. Twelve screens. Working AI coach. Built for retention.
+        </p>
+      </div>
+
+      {/* iOS */}
+      <div id="ios" className="hc-section">
+        <div className="hc-section-head">
+          <span className="num">A · IOS</span>
+          <h2>Primary flow</h2>
+          <p>Eight screens — daily ritual, recovery readout, AI coaching, and protocol-led training.</p>
+        </div>
+        <div className="hc-row">
+          {iosScreens.map(s => (
+            <IOSPhone key={s.key} screen={s.key} tweaks={tweaks} num={s.num} name={s.name} sub={s.sub}/>
+          ))}
+        </div>
+      </div>
+
+      {/* Android */}
+      <div id="android" className="hc-section">
+        <div className="hc-section-head">
+          <span className="num">B · ANDROID</span>
+          <h2>Commerce + account</h2>
+          <p>Four screens — the connected commerce side: product, subscription, profile, alerts.</p>
+        </div>
+        <div className="hc-row">
+          {androidScreens.map(s => (
+            <AndroidPhone key={s.key} screen={s.key} tweaks={tweaks} num={s.num} name={s.name} sub={s.sub}/>
+          ))}
+        </div>
+      </div>
+
+      {/* Prototype */}
+      <div id="proto" className="hc-section">
+        <div className="hc-section-head">
+          <span className="num">C · PROTOTYPE</span>
+          <h2>Live & clickable</h2>
+          <p>Use the bottom tabs and on-screen actions. The AI coach replies based on what you ask.</p>
+        </div>
+        <div className="hc-proto-wrap">
+          <div className="hc-tray">
+            {allScreens.map(s => (
+              <button key={s.key} data-active={protoScreen === s.key} onClick={()=>setProtoScreen(s.key)}>
+                {s.num} · {s.name}
+              </button>
+            ))}
+          </div>
+          <IOSDevice dark={true} width={390} height={844}>
+            <HydrocanApp tweaks={tweaks} startAt={protoScreen} frameId="proto"/>
+          </IOSDevice>
+        </div>
+      </div>
+
+      {/* Tweaks */}
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Look & feel">
+          <div style={{ marginBottom: 8, fontFamily:'JetBrains Mono', fontSize:10, color:'#B8C0CC', letterSpacing:'0.14em' }}>ACCENT</div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(6, 1fr)', gap: 6, marginBottom: 14 }}>
+            {ACCENTS.map(a => (
+              <button key={a.k} onClick={()=>setTweak('accent', a.v)}
+                title={a.l}
+                style={{
+                  height: 28, borderRadius: 6, cursor:'pointer',
+                  background: a.v,
+                  border: tweaks.accent === a.v ? '2px solid #fff' : '2px solid transparent',
+                  padding: 0
+                }}/>
+            ))}
+          </div>
+          <TweakSelect label="Hero metric" value={tweaks.heroVariant} onChange={v=>setTweak('heroVariant', v)}
+            options={['ring','numeric','cellular']}/>
+        </TweakSection>
+
+        <TweakSection label="State">
+          <TweakSelect label="User state" value={tweaks.userState} onChange={v=>setTweak('userState', v)}
+            options={['on-target','athlete','casual','dehydrated']}/>
+          <TweakSelect label="Time of day" value={tweaks.timeOfDay} onChange={v=>setTweak('timeOfDay', v)}
+            options={['morning','evening']}/>
+          <TweakSlider label="Daily goal" value={tweaks.goal} min={1.5} max={4} step={0.1} unit="L"
+            onChange={v=>setTweak('goal', v)}/>
+        </TweakSection>
+
+        <TweakSection label="AI Coach">
+          <TweakSelect label="Personality" value={tweaks.coachVoice} onChange={v=>setTweak('coachVoice', v)}
+            options={['direct','warm','witty','clinical']}/>
+        </TweakSection>
+
+        <TweakSection label="Prototype">
+          <TweakSelect label="Start screen" value={protoScreen}
+            onChange={v=>{ setProtoScreen(v); setTweak('startScreen', v); }}
+            options={allScreens.map(s => s.key)}/>
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Canvas/>);
+</script>
+
+</body>
+</html>

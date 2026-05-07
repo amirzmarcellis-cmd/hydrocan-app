@@ -2,26 +2,33 @@ import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { TabNavigator } from './TabNavigator';
-import { SignInScreen } from '@/screens/auth/SignInScreen';
-import { SetupPinScreen } from '@/screens/auth/SetupPinScreen';
-import { EnterPinScreen } from '@/screens/auth/EnterPinScreen';
-import { OnboardingScreen } from '@/screens/auth/OnboardingScreen';
-import { WrappedScreen } from '@/screens/WrappedScreen';
-import { PaywallScreen } from '@/screens/PaywallScreen';
-import { useAuthStore } from '@/stores/auth';
-import { useProfile } from '@/hooks/useProfile';
-import { palette } from '@/design/tokens';
 
-export type RootStackParamList = {
-  SignIn: undefined;
-  SetupPin: undefined;
-  EnterPin: undefined;
-  Onboarding: undefined;
-  Tabs: undefined;
-  Wrapped: undefined;
-  Paywall: undefined;
-};
+import { SignInScreen } from '@/screens/auth/SignInScreen';
+import { OnboardingNameScreen } from '@/screens/onboarding/OnboardingNameScreen';
+import { OnboardingCustomerScreen } from '@/screens/onboarding/OnboardingCustomerScreen';
+import { OnboardingConnectScreen } from '@/screens/onboarding/OnboardingConnectScreen';
+import { OnboardingGoalScreen } from '@/screens/onboarding/OnboardingGoalScreen';
+import { OnboardingPermissionsScreen } from '@/screens/onboarding/OnboardingPermissionsScreen';
+
+import { TabNavigator } from './TabNavigator';
+
+import { TrendsScreen } from '@/screens/secondary/TrendsScreen';
+import { RecoveryScreen } from '@/screens/secondary/RecoveryScreen';
+import { ScanScreen } from '@/screens/secondary/ScanScreen';
+import { WorkoutScreen } from '@/screens/secondary/WorkoutScreen';
+import { ProductScreen } from '@/screens/secondary/ProductScreen';
+import { SubscriptionScreen } from '@/screens/secondary/SubscriptionScreen';
+import { RemindersScreen } from '@/screens/secondary/RemindersScreen';
+import { ManualScreen } from '@/screens/secondary/ManualScreen';
+import { PrivacyScreen } from '@/screens/secondary/PrivacyScreen';
+import { HelpScreen } from '@/screens/secondary/HelpScreen';
+import { EducationScreen } from '@/screens/secondary/EducationScreen';
+import { NotificationsScreen } from '@/screens/secondary/NotificationsScreen';
+import { ConnectScreen } from '@/screens/secondary/ConnectScreen';
+
+import { palette } from '@/theme/tokens';
+import { useAuthStore } from '@/stores/auth';
+import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -29,29 +36,28 @@ const navTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: palette.bg,
-    card: palette.surface,
-    text: palette.text,
-    border: palette.border,
-    primary: palette.h2_500,
-    notification: palette.h2_400,
+    background: palette.graphite0,
+    card: palette.graphite1,
+    text: palette.text1,
+    border: palette.graphite4,
+    primary: palette.iceBright,
+    notification: palette.iceBright,
   },
 };
 
 function Loading() {
   return (
-    <View className="flex-1 items-center justify-center bg-bg">
-      <ActivityIndicator color={palette.h2_400} />
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.graphite0 }}>
+      <ActivityIndicator color={palette.iceBright} />
     </View>
   );
 }
 
 export function RootNavigator() {
-  const session = useAuthStore((s) => s.session);
   const initialized = useAuthStore((s) => s.initialized);
   const initialize = useAuthStore((s) => s.initialize);
-  const pinUnlocked = useAuthStore((s) => s.pinUnlocked);
-  const profile = useProfile();
+  const session = useAuthStore((s) => s.session);
+  const onboarded = useAuthStore((s) => s.onboarded);
 
   useEffect(() => {
     initialize();
@@ -59,40 +65,40 @@ export function RootNavigator() {
 
   if (!initialized) return <Loading />;
 
-  const signedIn = !!session;
-  const hasPin = !!profile.data?.pin_hash;
-  const onboardingDone = !!profile.data?.onboarding_completed_at;
+  // Demo flow: any signed-in user OR (no auth required for demo) sees onboarding
+  // until permissions screen marks `onboarded = true`.
+  // For prototype convenience, signing in via the welcome screen also flips
+  // `onboarded` to true after the last onboarding step.
+  const isAppReady = !!session || onboarded;
 
   return (
     <NavigationContainer theme={navTheme}>
-      <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
-        {!signedIn ? (
-          <Stack.Screen name="SignIn" component={SignInScreen} />
-        ) : !hasPin ? (
-          <Stack.Screen name="SetupPin">
-            {() => <SetupPinScreen onDone={() => profile.refetch()} />}
-          </Stack.Screen>
-        ) : !pinUnlocked ? (
-          <Stack.Screen name="EnterPin" component={EnterPinScreen} />
-        ) : !onboardingDone ? (
-          <Stack.Screen name="Onboarding">
-            {() => <OnboardingScreen onComplete={() => profile.refetch()} />}
-          </Stack.Screen>
+      <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.graphite0 } }}>
+        {!isAppReady ? (
+          <>
+            <Stack.Screen name="SignIn" component={SignInScreen} />
+            <Stack.Screen name="Onboarding" component={OnboardingNameScreen} />
+            <Stack.Screen name="OnboardingCustomer" component={OnboardingCustomerScreen} />
+            <Stack.Screen name="OnboardingConnect" component={OnboardingConnectScreen} />
+            <Stack.Screen name="OnboardingGoal" component={OnboardingGoalScreen} />
+            <Stack.Screen name="OnboardingPermissions" component={OnboardingPermissionsScreen} />
+          </>
         ) : (
           <>
             <Stack.Screen name="Tabs" component={TabNavigator} />
-            <Stack.Screen
-              name="Wrapped"
-              options={{ presentation: 'fullScreenModal', animation: 'fade' }}
-            >
-              {({ navigation }) => <WrappedScreen onClose={() => navigation.goBack()} />}
-            </Stack.Screen>
-            <Stack.Screen
-              name="Paywall"
-              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-            >
-              {({ navigation }) => <PaywallScreen onClose={() => navigation.goBack()} />}
-            </Stack.Screen>
+            <Stack.Screen name="Trends" component={TrendsScreen} />
+            <Stack.Screen name="Recovery" component={RecoveryScreen} />
+            <Stack.Screen name="Scan" component={ScanScreen} options={{ presentation: 'modal' }} />
+            <Stack.Screen name="Workout" component={WorkoutScreen} />
+            <Stack.Screen name="Product" component={ProductScreen} />
+            <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+            <Stack.Screen name="Reminders" component={RemindersScreen} />
+            <Stack.Screen name="Manual" component={ManualScreen} />
+            <Stack.Screen name="Privacy" component={PrivacyScreen} />
+            <Stack.Screen name="Help" component={HelpScreen} />
+            <Stack.Screen name="Education" component={EducationScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
+            <Stack.Screen name="Connect" component={ConnectScreen} />
           </>
         )}
       </Stack.Navigator>

@@ -1,133 +1,153 @@
-import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
-import { useState } from 'react';
-import { Screen } from '@/components/Screen';
-import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
-import { Tag } from '@/components/Tag';
-import { useLogCan, useTodayCanLogs } from '@/hooks/useCanLogs';
+// Quick log — amount stepper, can selector grid, three-button row at the bottom.
 
-const CONTEXTS = [
-  { key: 'morning', label: '☀️ Morning' },
-  { key: 'pre_workout', label: '🏋️ Pre-workout' },
-  { key: 'post_workout', label: '💪 Post-workout' },
-  { key: 'with_meal', label: '🍽 With meal' },
-  { key: 'evening', label: '🌙 Evening' },
-  { key: 'travel', label: '✈️ Travel' },
+import { useState } from 'react';
+import { View, Text, Pressable, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Screen } from '@/components/Screen';
+import { Display } from '@/components/Display';
+import { Eyebrow } from '@/components/Eyebrow';
+import { Body } from '@/components/Body';
+import { palette, fonts } from '@/theme/tokens';
+import { I } from '@/icons';
+import { useSettings } from '@/stores/settings';
+import { TopBar } from '@/components/TopBar';
+import { IconBtn } from '@/components/IconBtn';
+import { Pill } from '@/components/Pill';
+
+const CANS = [
+  { id: 'pure', name: 'Pure H₂', subtitle: '1.6 ppm dissolved', tag: 'EVERYDAY', color: '#B8E0F5' },
+  { id: 'electro', name: 'Electro H₂', subtitle: 'Sodium · Mg · K+', tag: 'PERFORM', color: '#7CC9EE' },
+  { id: 'citrus', name: 'Citrus H₂', subtitle: 'Yuzu · Pink salt', tag: 'DAILY', color: '#E5C97A' },
+  { id: 'recover', name: 'Recover H₂', subtitle: 'BCAA · L-Theanine', tag: 'POST', color: '#C7B8F5' },
 ];
 
-const FEEL_LABELS: Record<number, string> = {
-  1: 'Drained',
-  2: 'Low',
-  3: 'Neutral',
-  4: 'Good',
-  5: 'Peak',
-};
+const AMOUNTS = [150, 250, 330, 500, 750];
 
 export function LogScreen() {
-  const [quantity, setQuantity] = useState(1);
-  const [contextSel, setContextSel] = useState<string[]>([]);
-  const [feel, setFeel] = useState<number | null>(null);
-  const log = useLogCan();
-  const cans = useTodayCanLogs();
+  const accent = useSettings((s) => s.accent);
+  const nav = useNavigation<any>();
+  const [amount, setAmount] = useState(330);
+  const [selectedId, setSelectedId] = useState('pure');
+  const selected = CANS.find((c) => c.id === selectedId)!;
 
-  const toggleContext = (k: string) =>
-    setContextSel((prev) => (prev.includes(k) ? prev.filter((p) => p !== k) : [...prev, k]));
-
-  const submit = async () => {
-    try {
-      await log.mutateAsync({ quantity, context: contextSel, feel_score: feel });
-      setQuantity(1);
-      setContextSel([]);
-      setFeel(null);
-      Alert.alert('Logged', '+1 to your streak. Keep going.');
-    } catch (e: any) {
-      Alert.alert('Could not log', e.message ?? String(e));
-    }
-  };
+  const Back = I.back;
+  const Scan = I.scan;
+  const Mic = I.mic;
 
   return (
-    <Screen scrollable className="px-5">
-      <Text className="mb-1 mt-2 text-2xl font-bold text-text">Log a HydroCan</Text>
-      <Text className="mb-6 text-sm text-text-dim">Track every can to power your H₂ Index.</Text>
-
-      <Card elevated>
-        <Text className="mb-3 text-sm font-semibold text-text">Quantity</Text>
-        <View className="flex-row items-center justify-between">
-          <Pressable
-            onPress={() => setQuantity(Math.max(1, quantity - 1))}
-            className="h-12 w-12 items-center justify-center rounded-pill bg-surface2"
-          >
-            <Text className="text-2xl text-text">−</Text>
-          </Pressable>
-          <Text className="text-5xl font-bold text-h2-300">{quantity}</Text>
-          <Pressable
-            onPress={() => setQuantity(Math.min(20, quantity + 1))}
-            className="h-12 w-12 items-center justify-center rounded-pill bg-surface2"
-          >
-            <Text className="text-2xl text-text">+</Text>
-          </Pressable>
-        </View>
-      </Card>
-
-      <Card className="mt-4">
-        <Text className="mb-3 text-sm font-semibold text-text">Context</Text>
-        <View className="flex-row flex-wrap gap-2">
-          {CONTEXTS.map((c) => (
-            <Pressable key={c.key} onPress={() => toggleContext(c.key)}>
-              <Tag label={c.label} active={contextSel.includes(c.key)} />
-            </Pressable>
-          ))}
-        </View>
-      </Card>
-
-      <Card className="mt-4">
-        <Text className="mb-3 text-sm font-semibold text-text">How do you feel?</Text>
-        <View className="flex-row justify-between">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <Pressable
-              key={n}
-              onPress={() => setFeel(n)}
-              className={`h-14 w-14 items-center justify-center rounded-pill ${
-                feel === n ? 'bg-h2-500' : 'bg-surface2'
-              }`}
-            >
-              <Text className={feel === n ? 'text-bg font-bold' : 'text-text'}>{n}</Text>
-            </Pressable>
-          ))}
-        </View>
-        {feel ? (
-          <Text className="mt-3 text-center text-sm text-text-dim">{FEEL_LABELS[feel]}</Text>
-        ) : null}
-      </Card>
-
-      <Button
-        label="Save log"
-        onPress={submit}
-        loading={log.isPending}
-        size="lg"
-        className="mt-6"
+    <Screen scroll>
+      <TopBar
+        title="LOG H₂ INTAKE"
+        left={<IconBtn onPress={() => nav.navigate('Tabs', { screen: 'Today' })}><Back size={14} stroke={palette.text1} /></IconBtn>}
+        right={<IconBtn onPress={() => nav.navigate('Scan')}><Scan size={14} stroke={palette.text1} /></IconBtn>}
       />
+      <View style={{ paddingHorizontal: 18, paddingTop: 10 }}>
+        <Eyebrow size={9}>ADD HYDROCAN</Eyebrow>
+        <Display size={30} style={{ marginTop: 4 }}>
+          Tap, scan,
+        </Display>
+        <Display size={30} italic color={accent}>
+          or speak.
+        </Display>
+      </View>
 
-      <Text className="mb-2 mt-8 text-sm font-semibold text-text">Today's logs</Text>
-      {(cans.data ?? []).length === 0 ? (
-        <Text className="text-text-dim">No cans logged yet today.</Text>
-      ) : (
-        (cans.data ?? []).map((c) => (
-          <View
-            key={c.id}
-            className="mb-2 flex-row items-center justify-between rounded-md border border-border bg-surface p-3"
+      <View style={{ alignItems: 'center', paddingTop: 20, paddingHorizontal: 18 }}>
+        <Eyebrow size={9} style={{ marginBottom: 12 }}>
+          AMOUNT · ML
+        </Eyebrow>
+        <Text style={{ fontFamily: fonts.display, fontSize: 88, lineHeight: 88 * 0.9, color: accent, letterSpacing: -88 * 0.04 }}>
+          {amount}
+        </Text>
+        <Body size={11} color={palette.text3} style={{ marginTop: 4 }}>
+          {(amount / 1000).toFixed(2)}L · adds ~+{Math.round(amount / 120)} to H₂ Score
+        </Body>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, marginTop: 14 }}>
+          {AMOUNTS.map((v) => (
+            <Pill key={v} label={`${v}ML`} active={amount === v} onPress={() => setAmount(v)} accent={accent} />
+          ))}
+        </ScrollView>
+      </View>
+
+      <View style={{ paddingTop: 22, paddingHorizontal: 18 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <Display size={22}>Which can?</Display>
+          <Eyebrow size={9}>{CANS.length} TYPES</Eyebrow>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {CANS.map((c) => {
+            const active = selectedId === c.id;
+            return (
+              <Pressable
+                key={c.id}
+                onPress={() => setSelectedId(c.id)}
+                style={{
+                  width: '48.5%',
+                  padding: 12,
+                  backgroundColor: active ? 'rgba(124,201,238,0.06)' : palette.graphite2,
+                  borderColor: active ? accent : palette.graphite4,
+                  borderWidth: 1,
+                  borderRadius: 14,
+                }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.color }} />
+                  <Eyebrow size={7.5}>{c.tag}</Eyebrow>
+                </View>
+                <Display size={19}>{c.name}</Display>
+                <Body size={10} color={palette.text3} style={{ marginTop: 2 }}>
+                  {c.subtitle}
+                </Body>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={{ paddingHorizontal: 18, paddingVertical: 22, gap: 8 }}>
+        <Pressable
+          onPress={() => nav.navigate('Tabs', { screen: 'Today' })}
+          style={{ backgroundColor: accent, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Text style={{ fontFamily: fonts.display, fontSize: 14, color: palette.graphite0 }}>
+            Add {amount}ml of {selected.name}
+          </Text>
+        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable
+            onPress={() => nav.navigate('Scan')}
+            style={{
+              flex: 1,
+              backgroundColor: palette.graphite3,
+              borderColor: palette.graphite4,
+              borderWidth: 1,
+              paddingVertical: 13,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              gap: 6,
+            }}
           >
-            <Text className="text-sm text-text">
-              {new Date(c.consumed_at).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
-            <Text className="text-sm text-text-dim">×{c.quantity}</Text>
-            <Text className="text-sm text-h2-300">{c.feel_score ? `Feel ${c.feel_score}` : ''}</Text>
-          </View>
-        ))
-      )}
+            <Scan size={13} stroke={palette.text1} />
+            <Text style={{ fontFamily: fonts.display, fontSize: 13, color: palette.text1 }}>SCAN</Text>
+          </Pressable>
+          <Pressable
+            style={{
+              flex: 1,
+              backgroundColor: palette.graphite3,
+              borderColor: palette.graphite4,
+              borderWidth: 1,
+              paddingVertical: 13,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              gap: 6,
+            }}
+          >
+            <Mic size={13} stroke={palette.text1} />
+            <Text style={{ fontFamily: fonts.display, fontSize: 13, color: palette.text1 }}>VOICE</Text>
+          </Pressable>
+        </View>
+      </View>
     </Screen>
   );
 }

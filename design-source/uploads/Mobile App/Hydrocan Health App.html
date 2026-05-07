@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hydrocan Health — Mobile App</title>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  body { margin: 0; background: #0a0a0a; font-family: 'Inter', system-ui, sans-serif; }
+  .canvas-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 420px);
+    gap: 60px 48px;
+    padding: 40px 0 80px;
+  }
+  .canvas-android {
+    display: grid;
+    grid-template-columns: repeat(5, 430px);
+    gap: 60px 48px;
+    padding: 40px 0 80px;
+  }
+  .proto-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    padding-top: 40px;
+  }
+  .proto-tray {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 760px;
+  }
+  .proto-tray button {
+    background: #161616; border: 1px solid rgba(255,255,255,0.12); color: #fafafa;
+    padding: 8px 14px; border-radius: 4px; font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 600; cursor: pointer; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .proto-tray button:hover { border-color: #4db8ff; color: #4db8ff; }
+  .proto-tray button[data-active="true"] { background: #4db8ff; color: #0a0a0a; border-color: #4db8ff; }
+
+  .scroll-section {
+    padding: 0 72px;
+    overflow-x: auto;
+  }
+  .section-wrap { margin-bottom: 80px; }
+  .anchor-nav {
+    position: sticky; top: 0; z-index: 100;
+    padding: 16px 72px; background: rgba(10,10,10,0.85); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; gap: 16px; align-items: center;
+  }
+  .anchor-nav a {
+    color: rgba(255,255,255,0.55); font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 600; text-decoration: none;
+    padding: 8px 12px; border-radius: 4px; transition: all 0.2s;
+  }
+  .anchor-nav a:hover { color: #fafafa; background: rgba(255,255,255,0.05); }
+  .brand-mark {
+    font-family: 'Inter', sans-serif; font-weight: 900; letter-spacing: -0.03em;
+    font-size: 14px; color: #fafafa; margin-right: auto;
+    display: flex; gap: 8px; align-items: baseline;
+  }
+  .brand-mark span { font-weight: 500; font-size: 10px; letter-spacing: 0.25em; color: rgba(255,255,255,0.4); }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" src="frames/ios-frame.jsx"></script>
+<script type="text/babel" src="frames/android-frame.jsx"></script>
+<script type="text/babel" src="app/primitives.jsx"></script>
+<script type="text/babel" src="app/screens1.jsx"></script>
+<script type="text/babel" src="app/screens2.jsx"></script>
+<script type="text/babel" src="app/screens3.jsx"></script>
+<script type="text/babel" src="app/app-shell.jsx"></script>
+
+<script type="text/babel">
+const DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "dark",
+  "goal": 2.5,
+  "heroVariant": "ring",
+  "device": "Whoop 4.0",
+  "startScreen": "home"
+}/*EDITMODE-END*/;
+
+function PhoneCell({ label, sublabel, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {children}
+      <div className="screen-caption" style={{ textAlign: 'center' }}>
+        <span className="lbl">{label}</span>
+        <div className="name">{sublabel}</div>
+      </div>
+    </div>
+  );
+}
+
+function IOSPhone({ screen, tweaks, label, sublabel }) {
+  return (
+    <PhoneCell label={label} sublabel={sublabel}>
+      <IOSDevice dark={tweaks.theme === 'dark'} width={402} height={874}>
+        <HydrocanApp tweaks={tweaks} startAt={screen} frameId="ios"/>
+      </IOSDevice>
+    </PhoneCell>
+  );
+}
+
+function AndroidPhone({ screen, tweaks, label, sublabel }) {
+  return (
+    <PhoneCell label={label} sublabel={sublabel}>
+      <AndroidDevice dark={tweaks.theme === 'dark'} width={412} height={892}>
+        <HydrocanApp tweaks={tweaks} startAt={screen} frameId="android"/>
+      </AndroidDevice>
+    </PhoneCell>
+  );
+}
+
+function Canvas() {
+  const [tweaks, setTweaks] = React.useState(DEFAULTS);
+  const [editMode, setEditMode] = React.useState(false);
+  const [protoScreen, setProtoScreen] = React.useState(tweaks.startScreen);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === '__activate_edit_mode') setEditMode(true);
+      else if (e.data.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', onMsg);
+    setTimeout(() => window.parent.postMessage({ type: '__edit_mode_available' }, '*'), 100);
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const setTweak = (k, v) => {
+    const next = { ...tweaks, [k]: v };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+  };
+
+  const iosScreens = [
+    { key: 'onboarding', label: '01 · Onboarding', sub: 'Brand hero' },
+    { key: 'home', label: '02 · Today', sub: 'Hydration hub' },
+    { key: 'log', label: '03 · Log', sub: 'Quick entry' },
+    { key: 'recovery', label: '04 · Recovery', sub: 'Whoop integration' },
+    { key: 'trends', label: '05 · Trends', sub: 'Weekly patterns' },
+    { key: 'scan', label: '06 · Scan', sub: 'NFC / QR' },
+  ];
+  const androidScreens = [
+    { key: 'product', label: '07 · Product', sub: 'Can details' },
+    { key: 'subscription', label: '08 · Subscribe', sub: 'Delivery plan' },
+    { key: 'coach', label: '09 · Coach', sub: 'Hydro AI' },
+    { key: 'profile', label: '10 · Profile', sub: 'Account' },
+    { key: 'notifications', label: '11 · Inbox', sub: 'Smart alerts' },
+  ];
+  const allScreens = [...iosScreens, ...androidScreens];
+
+  return (
+    <div className="canvas-bg">
+      <div className="anchor-nav">
+        <div className="brand-mark">HYDROCAN <span>HEALTH · APP</span></div>
+        <a href="#ios">iOS</a>
+        <a href="#android">Android</a>
+        <a href="#proto">Prototype</a>
+      </div>
+
+      <div style={{ padding: '60px 72px 40px' }}>
+        <h1 className="canvas-title">Hydration, <b>quantified.</b></h1>
+        <p className="canvas-sub">
+          A mobile app that ties every sip of Hydrocan to the recovery data you already trust — Whoop HRV, Apple Health, Google Fit. Whoop-inspired dark UI, Hydrocan's voice. Eleven screens across two platforms, plus a live clickable prototype.
+        </p>
+      </div>
+
+      {/* iOS */}
+      <div id="ios" className="section-wrap">
+        <div style={{ padding: '0 72px' }}>
+          <div className="section-label">iOS · Primary flow · 6 screens</div>
+        </div>
+        <div className="scroll-section">
+          <div className="canvas-grid">
+            {iosScreens.map(s => (
+              <IOSPhone key={s.key} screen={s.key} tweaks={tweaks} label={s.label} sublabel={s.sub}/>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Android */}
+      <div id="android" className="section-wrap">
+        <div style={{ padding: '0 72px' }}>
+          <div className="section-label">Android · Secondary flow · 5 screens</div>
+        </div>
+        <div className="scroll-section">
+          <div className="canvas-android">
+            {androidScreens.map(s => (
+              <AndroidPhone key={s.key} screen={s.key} tweaks={tweaks} label={s.label} sublabel={s.sub}/>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Prototype */}
+      <div id="proto" className="section-wrap">
+        <div style={{ padding: '0 72px' }}>
+          <div className="section-label">Live prototype · Fully interactive</div>
+        </div>
+        <div className="proto-wrap">
+          <div className="proto-tray">
+            {allScreens.map(s => (
+              <button key={s.key} data-active={protoScreen === s.key} onClick={() => setProtoScreen(s.key)}>
+                {s.label.split(' · ')[1] || s.label}
+              </button>
+            ))}
+          </div>
+          <IOSDevice dark={tweaks.theme === 'dark'} width={402} height={874}>
+            <HydrocanApp tweaks={tweaks} startAt={protoScreen} frameId="proto"/>
+          </IOSDevice>
+        </div>
+      </div>
+
+      {editMode && (
+        <div className="tweaks-panel">
+          <h4>Tweaks</h4>
+          <div className="tweak-row">
+            <label>Theme</label>
+            <select value={tweaks.theme} onChange={e => setTweak('theme', e.target.value)}>
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+          <div className="tweak-row">
+            <label>Daily goal <span className="value">{tweaks.goal.toFixed(1)}L</span></label>
+            <input type="range" min="1.5" max="4" step="0.1" value={tweaks.goal} onChange={e => setTweak('goal', parseFloat(e.target.value))}/>
+          </div>
+          <div className="tweak-row">
+            <label>Hero metric</label>
+            <select value={tweaks.heroVariant} onChange={e => setTweak('heroVariant', e.target.value)}>
+              <option value="ring">Whoop-style ring</option>
+              <option value="numeric">Numeric with pulse</option>
+              <option value="fluid">Fluid-can</option>
+            </select>
+          </div>
+          <div className="tweak-row">
+            <label>Connected device</label>
+            <select value={tweaks.device} onChange={e => setTweak('device', e.target.value)}>
+              <option>Whoop 4.0</option>
+              <option>Apple Watch</option>
+              <option>Oura Ring</option>
+              <option>Google Fit</option>
+            </select>
+          </div>
+          <div className="tweak-row">
+            <label>Prototype start</label>
+            <select value={tweaks.startScreen} onChange={e => { setTweak('startScreen', e.target.value); setProtoScreen(e.target.value); }}>
+              {Object.keys(SCREENS).map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Canvas/>);
+</script>
+
+</body>
+</html>

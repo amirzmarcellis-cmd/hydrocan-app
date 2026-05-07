@@ -1,37 +1,31 @@
-import { ScrollView, View } from 'react-native';
+// Hydrocan screen wrapper — graphite background, optional safe-area edges.
+
+import { View, ScrollView, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactNode } from 'react';
+import { palette } from '@/theme/tokens';
 
-interface ScreenProps {
+interface Props {
   children: ReactNode;
-  scrollable?: boolean;
-  className?: string;
+  scroll?: boolean;
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
+  style?: ViewStyle;
+  contentStyle?: ViewStyle;
+  bg?: string;
 }
 
-export function Screen({
-  children,
-  scrollable = false,
-  className = '',
-  edges = ['top', 'bottom'],
-}: ScreenProps) {
-  const inner = scrollable ? (
-    <ScrollView
-      className="flex-1"
-      contentContainerClassName={`pb-10 ${className}`}
-      showsVerticalScrollIndicator={false}
-    >
-      {children}
-    </ScrollView>
-  ) : (
-    <View className={`flex-1 ${className}`}>{children}</View>
-  );
-
+export function Screen({ children, scroll = false, edges = ['top'], style, contentStyle, bg = palette.graphite0 }: Props) {
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={edges}>
+    <SafeAreaView edges={edges} style={[{ flex: 1, backgroundColor: bg }, style]}>
       <StatusBar style="light" />
-      {inner}
+      {scroll ? (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={contentStyle}>
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={[{ flex: 1 }, contentStyle]}>{children}</View>
+      )}
     </SafeAreaView>
   );
 }

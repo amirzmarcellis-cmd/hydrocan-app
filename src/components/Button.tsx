@@ -1,42 +1,29 @@
-import { Pressable, Text, ActivityIndicator } from 'react-native';
+import { Pressable, Text, type ViewStyle, type TextStyle, View, ActivityIndicator } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
+import { palette, fonts } from '@/theme/tokens';
 
-type Variant = 'primary' | 'secondary' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'editorial';
 type Size = 'sm' | 'md' | 'lg';
 
-interface ButtonProps {
+interface Props {
   label: string;
   onPress: () => void;
   variant?: Variant;
   size?: Size;
-  disabled?: boolean;
+  accent?: string;
   loading?: boolean;
-  className?: string;
+  disabled?: boolean;
+  rightArrow?: boolean;
+  style?: ViewStyle;
+  textStyle?: TextStyle;
+  block?: boolean;
 }
 
-const variantStyles: Record<Variant, string> = {
-  primary: 'bg-h2-500 active:bg-h2-600',
-  secondary: 'bg-surface2 border border-border active:bg-border',
-  ghost: 'bg-transparent active:bg-surface2',
-};
-
-const variantText: Record<Variant, string> = {
-  primary: 'text-bg font-semibold',
-  secondary: 'text-text font-semibold',
-  ghost: 'text-h2-300 font-medium',
-};
-
-const sizeStyles: Record<Size, string> = {
-  sm: 'h-10 px-4 rounded-md',
-  md: 'h-12 px-5 rounded-lg',
-  lg: 'h-14 px-6 rounded-lg',
-};
-
-const sizeText: Record<Size, string> = {
-  sm: 'text-sm',
-  md: 'text-base',
-  lg: 'text-lg',
+const PADS: Record<Size, { v: number; h: number; fs: number }> = {
+  sm: { v: 9, h: 12, fs: 12 },
+  md: { v: 13, h: 18, fs: 13 },
+  lg: { v: 15, h: 14, fs: 15 },
 };
 
 export function Button({
@@ -44,29 +31,90 @@ export function Button({
   onPress,
   variant = 'primary',
   size = 'md',
-  disabled = false,
+  accent = palette.iceBright,
   loading = false,
-  className = '',
-}: ButtonProps) {
-  const handlePress = () => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  disabled = false,
+  rightArrow = false,
+  style,
+  textStyle,
+  block = false,
+}: Props) {
+  const handle = () => {
+    if (!disabled && !loading) {
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      onPress();
     }
-    onPress();
   };
+
+  const pad = PADS[size];
+  let bg: string, color: string, border: string | undefined;
+  switch (variant) {
+    case 'primary':
+      bg = disabled ? 'rgba(255,255,255,0.06)' : accent;
+      color = disabled ? 'rgba(255,255,255,0.3)' : '#050608';
+      border = undefined;
+      break;
+    case 'secondary':
+      bg = palette.graphite3;
+      color = palette.text1;
+      border = palette.graphite4;
+      break;
+    case 'ghost':
+      bg = 'transparent';
+      color = accent;
+      border = undefined;
+      break;
+    case 'editorial':
+      bg = 'rgba(255,255,255,0.04)';
+      color = palette.text1;
+      border = 'rgba(255,255,255,0.16)';
+      break;
+  }
 
   return (
     <Pressable
-      onPress={handlePress}
-      disabled={disabled || loading}
-      className={`flex-row items-center justify-center ${variantStyles[variant]} ${sizeStyles[size]} ${
-        disabled ? 'opacity-50' : ''
-      } ${className}`}
+      onPress={handle}
+      style={({ pressed }) => [
+        {
+          paddingVertical: pad.v,
+          paddingHorizontal: pad.h,
+          backgroundColor: bg,
+          borderColor: border,
+          borderWidth: border ? 1 : 0,
+          opacity: pressed ? 0.85 : 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: block ? '100%' : undefined,
+        },
+        style,
+      ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#05080F' : '#F5F8FF'} />
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <ActivityIndicator color={color} />
+        </View>
       ) : (
-        <Text className={`${variantText[variant]} ${sizeText[size]}`}>{label}</Text>
+        <>
+          <Text
+            style={[
+              {
+                color,
+                fontFamily: fonts.display,
+                fontSize: pad.fs,
+                letterSpacing: -0.2,
+                flex: rightArrow ? 1 : undefined,
+                textAlign: rightArrow ? 'left' : 'center',
+              },
+              textStyle,
+            ]}
+          >
+            {label}
+          </Text>
+          {rightArrow && (
+            <Text style={{ color, fontFamily: fonts.display, fontSize: pad.fs }}>→</Text>
+          )}
+        </>
       )}
     </Pressable>
   );
