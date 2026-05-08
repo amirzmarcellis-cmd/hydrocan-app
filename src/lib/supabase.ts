@@ -4,11 +4,24 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import type { Database } from './database.types';
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const anon = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+// Env vars are read at JS-bundle build time. If they're missing we degrade
+// to a safe placeholder client so the UI still boots — every Supabase call
+// will fail at runtime, but no screen crashes on startup.
+const PLACEHOLDER_URL = 'https://placeholder.supabase.co';
+const PLACEHOLDER_KEY = 'placeholder';
 
-if (!url || !anon) {
-  throw new Error('Missing Supabase env vars. Copy .env.example to .env.local.');
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? PLACEHOLDER_URL;
+const anon = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? PLACEHOLDER_KEY;
+
+export const isSupabaseConfigured =
+  url !== PLACEHOLDER_URL && anon !== PLACEHOLDER_KEY && !!url && !!anon;
+
+if (!isSupabaseConfigured && __DEV__) {
+  console.warn(
+    '[hydrocan] Missing EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY.\n' +
+      'Copy .env.example to .env.local in the project root and restart with `npx expo start --clear`.\n' +
+      'The app will boot in mock-data mode until env vars are available.',
+  );
 }
 
 const SecureStoreAdapter = {
